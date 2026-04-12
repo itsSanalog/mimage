@@ -281,6 +281,10 @@ legend {
   min-height: 0;
 }
 
+#container.app-grid > * {
+  min-width: 0;
+}
+
 .app-root[data-layout-columns='mirrored'] #container.app-grid {
   grid-template-columns: var(--masks-column-width) 1fr var(--tools-column-width);
   grid-template-areas: 'masksDiv preview toolsDiv';
@@ -370,6 +374,13 @@ legend {
   margin-bottom: 8px;
 }
 
+.mobile-topbar,
+.mobile-bottom-shell,
+.mobile-panel-nav {
+  display: none;
+}
+
+#settingsButton,
 #github {
   width: 24px;
   height: 24px;

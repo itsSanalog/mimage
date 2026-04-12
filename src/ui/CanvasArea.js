@@ -151,6 +151,7 @@ export class CanvasArea {
     this.refs.canvasHost = el('div', { id: 'canvasDiv' });
     this.refs.shareGroup = el('div', { className: 'action-group action-group--share' }, [
       el('div', { className: 'action-group-controls action-group-controls--stack' }, [
+        this.refs.mobileRis,
         el('div', { className: 'share-token-controls' }, [
           this.refs.accessTokenInput,
           this.refs.accessTokenSubmit,
@@ -169,6 +170,7 @@ export class CanvasArea {
     this.refs.importGroup = el('div', { className: 'action-group action-group--import' }, [
       el('div', { className: 'action-group-label', textContent: 'Paste' }),
       el('div', { className: 'action-group-controls action-group-controls--stack' }, [
+        this.refs.mobilePaste,
         this.refs.pasteAsLayerToggle,
         this.refs.pasteAsLayerHint,
       ]),
@@ -194,7 +196,7 @@ export class CanvasArea {
         this.refs.actualSizeButton,
       ]),
     ]);
-    this.refs.actionBar = el('div', { className: 'action-bar hidden' }, [
+    this.refs.actionBar = el('div', { className: 'action-bar is-preload' }, [
       this.refs.importGroup,
       this.refs.shareGroup,
       this.refs.exportGroup,
