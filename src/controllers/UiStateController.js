@@ -4,14 +4,14 @@ export class UiStateController {
   }
 
   hideIntroButtons() {
-    this.app.syncSavedRoundsEntryPoints();
+    return;
   }
 
   applyImageLoadedUiState() {
     const refs = this.app.canvasArea.refs;
 
     refs.dropOverlay.classList.add('hidden');
-    refs.actionBar.classList.remove('is-preload');
+    refs.actionBar.classList.remove('hidden');
     this.hideIntroButtons();
     refs.uploadButton.classList.remove('hidden');
     refs.copyImageButton.classList.remove('hidden');
@@ -32,27 +32,13 @@ export class UiStateController {
     const hasUploadedUrl = Boolean(refs.uploadedUrl.value.trim());
 
     refs.uploadButton.textContent = hasUploadedUrl ? 'Reupload' : 'Upload to Imgur';
-    refs.actionBar.classList.remove('is-preload');
+    refs.actionBar.classList.remove('hidden');
     refs.uploadedUrl.classList.toggle('hidden', !hasUploadedUrl);
     refs.copyUrlButton.classList.toggle('hidden', !hasUploadedUrl);
     refs.checkRisButton.classList.toggle('hidden', !hasUploadedUrl);
     refs.roundTitle.classList.toggle('hidden', !hasUploadedUrl);
     refs.roundAnswer.classList.toggle('hidden', !hasUploadedUrl);
     refs.exportButton.classList.toggle('hidden', !hasUploadedUrl);
-
-    if (refs.subredditInput.value.trim() && refs.subredditInput.value.trim() !== 'picturegame') {
-      refs.subredditInput.classList.remove('hidden');
-    }
-
-    this.updatePostRedditButtonLabel();
-    this.hideIntroButtons();
-  }
-
-  showCustomSubredditInput() {
-    const refs = this.app.canvasArea.refs;
-
-    refs.subredditInput.classList.remove('hidden');
-    this.updatePostRedditButtonLabel();
   }
 
   updateWorkflowStatus() {

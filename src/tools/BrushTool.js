@@ -210,14 +210,17 @@ export class BrushTool {
     }
 
     const layerState = this.getLayerState(layerId);
-    const surfaceSize = this.getSurfaceSize();
-    const resized = this.ensureBackingStore(
-      layerState,
-      surfaceSize.width,
-      surfaceSize.height,
-      surfaceSize.width,
-      surfaceSize.height
+    const displayWidth = Math.max(
+      1,
+      Math.round(this.canvasEngine.canvasWidth || this.canvasEngine.app.renderer.width || 1)
     );
+    const displayHeight = Math.max(
+      1,
+      Math.round(this.canvasEngine.canvasHeight || this.canvasEngine.app.renderer.height || 1)
+    );
+    const textureWidth = Math.max(1, Math.round(this.canvasEngine.app.renderer.width));
+    const textureHeight = Math.max(1, Math.round(this.canvasEngine.app.renderer.height));
+    const resized = this.ensureBackingStore(layerState, textureWidth, textureHeight);
 
     if (!layerState.sprite) {
       layerState.texture = Texture.from(layerState.offscreenCanvas);
@@ -225,15 +228,14 @@ export class BrushTool {
       layerState.sprite.eventMode = 'none';
       layerState.sprite.cursor = 'default';
       layerState.sprite.__toolType = 'brush-surface';
-      layerState.sprite.width = surfaceSize.width;
-      layerState.sprite.height = surfaceSize.height;
+      layerState.sprite.width = displayWidth;
+      layerState.sprite.height = displayHeight;
       this.attachSurfaceSprite(layer, layerState.sprite);
       return;
     }
 
-    this.ensureTextureForBackingStore(layerState, resized);
-    layerState.sprite.width = surfaceSize.width;
-    layerState.sprite.height = surfaceSize.height;
+    layerState.sprite.width = displayWidth;
+    layerState.sprite.height = displayHeight;
     this.attachSurfaceSprite(layer, layerState.sprite);
 
     if (resized) {
@@ -264,15 +266,10 @@ export class BrushTool {
     }
 
     const layerState = this.getLayerState(layerId);
-    const surfaceSize = this.getSurfaceSize();
+    const textureWidth = Math.max(1, Math.round(this.canvasEngine.app.renderer.width));
+    const textureHeight = Math.max(1, Math.round(this.canvasEngine.app.renderer.height));
 
-    const resized = this.ensureBackingStore(
-      layerState,
-      surfaceSize.width,
-      surfaceSize.height,
-      surfaceSize.width,
-      surfaceSize.height
-    );
+    this.ensureBackingStore(layerState, textureWidth, textureHeight);
 
     if (!layerState.sprite) {
       layerState.texture = Texture.from(layerState.offscreenCanvas);
@@ -282,10 +279,9 @@ export class BrushTool {
       layerState.sprite.__toolType = 'brush-surface';
     }
 
-    this.ensureTextureForBackingStore(layerState, resized);
     this.attachSurfaceSprite(layer, layerState.sprite);
-    layerState.sprite.width = surfaceSize.width;
-    layerState.sprite.height = surfaceSize.height;
+    layerState.sprite.width = this.canvasEngine.canvasWidth || textureWidth;
+    layerState.sprite.height = this.canvasEngine.canvasHeight || textureHeight;
     layerState.offscreenContext.clearRect(
       0,
       0,
@@ -334,22 +330,8 @@ export class BrushTool {
     }
 
     const context = layerState.offscreenContext;
-    const coordinateWidth = Math.max(
-      1,
-      Number(layerState.coordinateWidth) ||
-        Number(this.canvasEngine.canvasWidth) ||
-        Number(stroke.baseWidth) ||
-        layerState.offscreenCanvas.width
-    );
-    const coordinateHeight = Math.max(
-      1,
-      Number(layerState.coordinateHeight) ||
-        Number(this.canvasEngine.canvasHeight) ||
-        Number(stroke.baseHeight) ||
-        layerState.offscreenCanvas.height
-    );
-    const scaleX = layerState.offscreenCanvas.width / coordinateWidth;
-    const scaleY = layerState.offscreenCanvas.height / coordinateHeight;
+    const scaleX = layerState.offscreenCanvas.width / stroke.baseWidth;
+    const scaleY = layerState.offscreenCanvas.height / stroke.baseHeight;
 
     context.save();
     context.scale(scaleX, scaleY);
@@ -565,77 +547,35 @@ export class BrushTool {
         texture: null,
         offscreenCanvas: null,
         offscreenContext: null,
-        coordinateWidth: 1,
-        coordinateHeight: 1,
       };
     }
 
     return layerStates[layerId];
   }
 
-  getSurfaceSize() {
-    return {
-      width: Math.max(
-        1,
-        Math.round(this.canvasEngine.canvasWidth || this.canvasEngine.app?.renderer?.width || 1)
-      ),
-      height: Math.max(
-        1,
-        Math.round(this.canvasEngine.canvasHeight || this.canvasEngine.app?.renderer?.height || 1)
-      ),
-    };
-  }
-
-  ensureBackingStore(layerState, width, height, coordinateWidth = width, coordinateHeight = height) {
+  ensureBackingStore(layerState, width, height) {
     const needsCanvas = !layerState.offscreenCanvas;
     const needsResize =
       needsCanvas ||
       layerState.offscreenCanvas.width !== width ||
       layerState.offscreenCanvas.height !== height;
 
-    if (needsResize) {
-      if (!needsCanvas) {
-        layerState.texture?.destroy?.(false);
-        layerState.texture = null;
-      }
-
+    if (needsCanvas) {
       layerState.offscreenCanvas = document.createElement('canvas');
+    }
+
+    if (needsResize) {
       layerState.offscreenCanvas.width = width;
       layerState.offscreenCanvas.height = height;
       layerState.offscreenContext = layerState.offscreenCanvas.getContext('2d');
+      layerState.texture?.source?.update?.();
     }
 
     if (!layerState.offscreenContext) {
       layerState.offscreenContext = layerState.offscreenCanvas.getContext('2d');
     }
 
-    layerState.coordinateWidth = Math.max(1, Number(coordinateWidth) || width);
-    layerState.coordinateHeight = Math.max(1, Number(coordinateHeight) || height);
-
     return needsResize;
-  }
-
-  ensureTextureForBackingStore(layerState, resized = false) {
-    if (!layerState?.offscreenCanvas) {
-      return;
-    }
-
-    if (!layerState.texture) {
-      layerState.texture = Texture.from(layerState.offscreenCanvas);
-    }
-
-    if (layerState.sprite && layerState.sprite.texture !== layerState.texture) {
-      layerState.sprite.texture = layerState.texture;
-    }
-
-    if (resized && layerState.texture?.source?.resize) {
-      layerState.texture.source.resize(
-        layerState.offscreenCanvas.width,
-        layerState.offscreenCanvas.height
-      );
-    }
-
-    this.syncTexture(layerState);
   }
 
   syncTexture(layerState) {

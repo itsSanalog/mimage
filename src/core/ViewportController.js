@@ -4,7 +4,7 @@ export class ViewportController {
     this.eventBus = eventBus;
     this.spacePressed = false;
     this.panState = null;
-    this.minScale = 0.05;
+    this.minScale = 0.5;
     this.maxScale = 8;
 
     this.handleWheel = this.handleWheel.bind(this);
@@ -114,20 +114,7 @@ export class ViewportController {
   }
 
   fitToScreen() {
-    const fitScale = Math.min(
-      this.canvasEngine.editorWidth / this.canvasEngine.canvasWidth,
-      this.canvasEngine.editorHeight / this.canvasEngine.canvasHeight,
-      1
-    );
-    const scale = Math.max(this.minScale, Math.min(this.maxScale, fitScale));
-    const documentX = this.canvasEngine.documentContainer?.x ?? 0;
-    const documentY = this.canvasEngine.documentContainer?.y ?? 0;
-
-    this.canvasEngine.setViewportTransform({
-      scale,
-      x: ((this.canvasEngine.editorWidth - this.canvasEngine.canvasWidth * scale) / 2) - documentX * scale,
-      y: ((this.canvasEngine.editorHeight - this.canvasEngine.canvasHeight * scale) / 2) - documentY * scale,
-    });
+    this.canvasEngine.resetViewport();
   }
 
   setActualSize() {

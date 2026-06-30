@@ -79,15 +79,6 @@
   gap: 6px;
 }
 
-.editor-output-panel {
-  display: grid;
-  gap: 6px;
-}
-
-.app-root[data-layout-mode='desktop'] .action-bar.is-preload {
-  display: none;
-}
-
 .action-group {
   display: grid;
   gap: 4px;
@@ -191,9 +182,4 @@
 #mobilePaste,
 #mobileRIS {
   display: none;
-}
-
-#mobilePaste input,
-#mobileRIS input {
-  width: 100%;
 }
